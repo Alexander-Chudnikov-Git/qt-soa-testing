@@ -48,7 +48,7 @@ private:
 
 	bool m_unlock_quit;
 
-	QMap<QString, QString> m_original_keybinds;
+	QMap<QString, QPair<QString, QString>> m_original_keybinds;
 };
 
 } // namespace APP
