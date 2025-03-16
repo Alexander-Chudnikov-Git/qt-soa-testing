@@ -42,10 +42,10 @@ void SettingsManager::populateSettings()
 	populateGroup(Group::LANGUAGE, DEFAULTS::d_settings_group_language);
 
 	// [Application defaults]
-	populateSetting(Setting::WINDOW_RECT, DEFAULTS::d_settings_setting_window_rect,
-					QRect(-16, -16, QApplication::primaryScreen()->geometry().width() + 32,
-						  QApplication::primaryScreen()->geometry().height() + 32),
-					Group::APPLICATION);
+	populateSetting(
+		Setting::WINDOW_RECT, DEFAULTS::d_settings_setting_window_rect,
+		QRect(0, 0, QApplication::primaryScreen()->geometry().width(), QApplication::primaryScreen()->geometry().height()),
+		Group::APPLICATION);
 	populateSetting(Setting::LAST_OPEN_PANEL, DEFAULTS::d_settings_setting_last_open_panel,
 					QVariant::fromValue(DEFAULTS::d_application_default_panel), Group::APPLICATION);
 

@@ -1,53 +1,56 @@
-#ifndef MAINWINDOW_HPP
-#define MAINWINDOW_HPP
+#ifndef MAIN_WINDOW_HPP
+#define MAIN_WINDOW_HPP
 
+#include <QCloseEvent>
 #include <QEvent>
+#include <QGridLayout>
 #include <QMainWindow>
 #include <QMoveEvent>
+#include <QObject>
 #include <QResizeEvent>
-
-class QGridLayout;
-class QSplitter;
-class QTimer;
+#include <QTimer>
 
 namespace APP
 {
-class ControlPanelWidget;
+
+// Forward declaration of UserPanelWidget (assuming it's defined in user_panel_widget.hpp)
 class UserPanelWidget;
-} // namespace APP
 
-namespace APP
-{
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
 public:
 	explicit MainWindow(QWidget *parent = nullptr);
-	~MainWindow();
+	~MainWindow() override;
+
+protected:
+	void moveEvent(QMoveEvent *event) override;
+	void resizeEvent(QResizeEvent *event) override;
+	bool event(QEvent *event) override;
+	bool eventFilter(QObject *watched, QEvent *event) override;
+	void closeEvent(QCloseEvent *event) override;
+
+private slots:
+	void onMoveResizeTimerTimeout();
+	void disableAllGSettingsKeybinds();
+	void restoreAllGSettingsKeybinds();
 
 private:
 	void initialize();
 	void setupUi();
-	void setupStyle();
 	void setupConnections();
+	void setupStyle();
 
-private slots:
-	void onMoveResizeTimerTimeout();
-
-private:
-	void moveEvent(QMoveEvent *event) override;
-	void resizeEvent(QResizeEvent *event) override;
-
-protected:
-	bool event(QEvent *event) override;
-
-private:
-	QGridLayout *m_main_layout;
-
+	QTimer			*m_move_resize_timer;
+	QGridLayout		*m_main_layout;
 	UserPanelWidget *m_user_panel;
 
-	QTimer *m_move_resize_timer;
+	bool m_unlock_quit;
+
+	QMap<QString, QString> m_original_keybinds;
 };
+
 } // namespace APP
-#endif // MAINWINDOW_HPP
+
+#endif // MAIN_WINDOW_HPP

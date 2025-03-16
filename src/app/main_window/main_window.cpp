@@ -3,9 +3,13 @@
 #include "settings_manager.hpp"
 #include "user_panel_widget.hpp"
 
+#include <QApplication>
 #include <QGridLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QPixmap>
+#include <QProcess>
+#include <QPushButton>
 #include <QSizePolicy>
 #include <QSplashScreen>
 #include <QSplitter>
@@ -13,7 +17,7 @@
 
 namespace APP
 {
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), m_move_resize_timer(new QTimer(this))
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), m_move_resize_timer(new QTimer(this)), m_unlock_quit(false)
 {
 	this->initialize();
 }
@@ -25,22 +29,26 @@ void MainWindow::initialize()
 {
 	QRect window_rect = UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::WINDOW_RECT).toRect();
 
-	setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint |
-				   Qt::SplashScreen | Qt::MSWindowsFixedSizeDialogHint | Qt::BypassWindowManagerHint | Qt::MSWindowsOwnDC |
-				   Qt::WindowOverridesSystemGestures);
+	this->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint |
+						 Qt::SplashScreen | Qt::MSWindowsFixedSizeDialogHint | Qt::BypassWindowManagerHint |
+						 Qt::MSWindowsOwnDC | Qt::WindowOverridesSystemGestures);
 
-	move(window_rect.x(), window_rect.y());
-	setFixedSize(window_rect.width(), window_rect.height());
-	showMaximized();
-	showFullScreen();
+	this->move(window_rect.x(), window_rect.y());
+	this->setFixedSize(window_rect.width(), window_rect.height());
+	this->showFullScreen();
 
-	this->m_move_resize_timer->setInterval(100);
+	this->m_move_resize_timer->setInterval(200);
 	this->m_move_resize_timer->setSingleShot(false);
 	this->m_move_resize_timer->start();
 
 	this->setupUi();
 	this->setupConnections();
 	this->setupStyle();
+
+	qApp->installEventFilter(this);
+
+	disableAllGSettingsKeybinds();
+	qDebug() << m_original_keybinds;
 }
 
 void MainWindow::setupUi()
@@ -49,10 +57,24 @@ void MainWindow::setupUi()
 	this->m_main_layout = new QGridLayout();
 	this->m_user_panel	= new UserPanelWidget();
 
-	this->m_main_layout->addWidget(this->m_user_panel);
+	// Debug close button
+	QPushButton *button = new QPushButton("Close Application");
+	connect(button, &QPushButton::clicked, this, [this]() {
+		restoreAllGSettingsKeybinds();
+		m_unlock_quit = true;
+		close();
+		qApp->quit();
+	});
+	this->m_main_layout->addWidget(button, 0, 0);
+
+	this->m_main_layout->addWidget(this->m_user_panel, 0, 1);
 
 	layout_wrapper->setLayout(this->m_main_layout);
 	this->setCentralWidget(layout_wrapper);
+
+	this->setFocus();
+	this->activateWindow();
+	this->raise();
 }
 
 void MainWindow::setupConnections()
@@ -67,21 +89,26 @@ void MainWindow::setupStyle()
 
 void MainWindow::moveEvent(QMoveEvent *event)
 {
-	showFullScreen();
+	onMoveResizeTimerTimeout();
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-	showFullScreen();
+	onMoveResizeTimerTimeout();
 }
 
 void MainWindow::onMoveResizeTimerTimeout()
 {
-	showFullScreen();
-	raise();
-	activateWindow();
-	setFocus();
+	QRect window_rect = UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::WINDOW_RECT).toRect();
+
+	this->move(window_rect.x(), window_rect.y());
+	this->setFixedSize(window_rect.width(), window_rect.height());
+	this->showFullScreen();
+	this->setFocus();
+	this->activateWindow();
+	this->raise();
 }
+
 bool MainWindow::event(QEvent *event)
 {
 	if (event->type() == QEvent::FocusOut)
@@ -92,7 +119,96 @@ bool MainWindow::event(QEvent *event)
 	{
 		onMoveResizeTimerTimeout();
 	}
-	return QMainWindow::event(event);
+	if (QMainWindow::event(event))
+		return true;
+
+	return false;
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+	if (event->type() == QEvent::FocusOut)
+	{
+		onMoveResizeTimerTimeout();
+	}
+
+	if (event->type() == QEvent::FocusIn)
+	{
+		onMoveResizeTimerTimeout();
+	}
+
+	if (event->type() == QEvent::KeyPress)
+	{
+		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+		if (keyEvent->modifiers() & Qt::AltModifier)
+		{
+			return true;
+		}
+		if (keyEvent->modifiers() & Qt::ControlModifier)
+		{
+			return true;
+		}
+		if (keyEvent->modifiers() & Qt::MetaModifier)
+		{
+			return true;
+		}
+		if (keyEvent->key() & Qt::Key_Super_L)
+		{
+			return true;
+		}
+		if (keyEvent->key() & Qt::Key_Super_R)
+		{
+			return true;
+		}
+
+		return false;
+	}
+	return QMainWindow::eventFilter(watched, event);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	if (m_unlock_quit)
+	{
+		event->accept();
+		return;
+	}
+	event->ignore();
+}
+
+void MainWindow::disableAllGSettingsKeybinds()
+{
+	QProcess process;
+	process.start("bash", QStringList() << "-c" << "gsettings list-recursively | grep '<[a-zA-Z]*>'");
+	process.waitForFinished();
+	QString output = process.readAllStandardOutput();
+
+	QStringList lines = output.split("\n", Qt::SkipEmptyParts);
+	for (const QString &line : lines)
+	{
+		QStringList parts = line.split(" ", Qt::SkipEmptyParts);
+		if (parts.size() >= 3)
+		{
+			QString schema = parts[0];
+			QString key	   = parts[1];
+			QString value  = parts.mid(2).join(" ");
+
+			m_original_keybinds[key] = value;
+			QProcess::execute("gsettings", {"set", schema, key, ""});
+		}
+	}
+}
+
+void MainWindow::restoreAllGSettingsKeybinds()
+{
+	for (auto it = m_original_keybinds.begin(); it != m_original_keybinds.end(); ++it)
+	{
+		QString key	  = it.key();
+		QString value = it.value();
+		QProcess::execute("gsettings", {"set", "org.gnome.desktop.wm.keybindings", key, value});
+	}
+	m_original_keybinds.clear();
 }
 
 } // namespace APP
