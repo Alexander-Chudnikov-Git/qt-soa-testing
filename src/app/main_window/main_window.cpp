@@ -170,10 +170,8 @@ int executeProcess(const QString &program, const QStringList &arguments)
 void MainWindow::executeProcessShellMethod(const QString &command)
 {
 	QProcess process;
-	process.start("bash", QStringList() << "-c" << command);
+	process.start("bash", QStringList() << "-c" << command << "> /dev/null 2>&");
 	process.waitForFinished();
-
-	qDebug() << command;
 }
 
 QFuture<void> MainWindow::runShellCommandAsync(const QString &command)
