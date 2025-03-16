@@ -172,6 +172,8 @@ void MainWindow::executeProcessShellMethod(const QString &command)
 	QProcess process;
 	process.start("bash", QStringList() << "-c" << command);
 	process.waitForFinished();
+
+	qDebug() << command;
 }
 
 QFuture<void> MainWindow::runShellCommandAsync(const QString &command)
@@ -215,7 +217,7 @@ void MainWindow::disableAllGSettingsKeybinds()
 				new_value = "''";
 			}
 
-			future = runShellCommandAsync(QString("gsettings set %1 %2 %3 %4").arg(schema, key, new_value));
+			future = runShellCommandAsync(QString("gsettings set %1 %2 %3").arg(schema, key, new_value));
 			SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 						   "\tTemporary removing keybind: " + schema + " " + key + " " + value + " " + new_value);
 		}
@@ -235,7 +237,7 @@ void MainWindow::restoreAllGSettingsKeybinds()
 		QString value  = it.value().second;
 		QString schema = it.value().first;
 
-		future = runShellCommandAsync(QString("gsettings set %1 %2 %3 %4").arg(schema, key, value));
+		future = runShellCommandAsync(QString("gsettings set %1 %2 %3").arg(schema, key, value));
 		SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 					   "\tRestoring keybind: " + schema + " " + key + " " + value);
 	}
