@@ -1,6 +1,7 @@
 #include "main_window.hpp"
 
 #include "settings_manager.hpp"
+#include "spdlog_wrapper.hpp"
 #include "user_panel_widget.hpp"
 
 #include <QApplication>
@@ -14,6 +15,7 @@
 #include <QSplashScreen>
 #include <QSplitter>
 #include <QTimer>
+#include <QtConcurrent>
 #include <qlogging.h>
 
 namespace APP
