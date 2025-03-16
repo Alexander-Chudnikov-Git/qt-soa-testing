@@ -180,7 +180,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::disableAllGSettingsKeybinds()
 {
 	QProcess process;
-	process.start("bash", QStringList() << "-c" << "gsettings list-recursively | grep '<[a-zA-Z]*>'");
+	process.start("bash", QStringList() << "-c" << "gsettings list-recursively | grep -E \"<[a-zA-Z]*>|(Super|Alt|Control|Meta|Key)\"");
 	process.waitForFinished();
 	QString output = process.readAllStandardOutput();
 
@@ -205,8 +205,8 @@ void MainWindow::restoreAllGSettingsKeybinds()
 {
 	for (auto it = m_original_keybinds.begin(); it != m_original_keybinds.end(); ++it)
 	{
-		QString key	  = it.key();
-		QString value = it.value().second;
+		QString key	   = it.key();
+		QString value  = it.value().second;
 		QString schema = it.value().first;
 		QProcess::execute("gsettings", {"set", schema, key, value});
 	}
