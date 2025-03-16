@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/generic">
+        <file>app/icons/splash/splash.svg</file>
+    </qresource>
+    <qresource prefix="/gui">
+        <file>app/icons/controls/viewer-menu-button.svg</file>
+        <file>app/icons/controls/settings-menu-button.svg</file>
+    </qresource>
+    <qresource prefix="/opengl">
+        <file>app/shaders/video_vertex_shader.vert</file>
+        <file>app/shaders/video_fragment_shader.frag</file>
+    </qresource>
+</RCC>

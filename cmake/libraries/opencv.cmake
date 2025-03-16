@@ -1,0 +1,6 @@
+find_package(OpenCV 4.0.0 REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
+list(APPEND PROJECT_LIBRARIES_LIST ${OpenCV_LIBS})
+list(APPEND PROJECT_DIRECTORIES_LIST ${OpenCV_INCLUDE_DIRS})
+
