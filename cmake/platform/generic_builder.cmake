@@ -44,7 +44,6 @@ file(GLOB PROJECT_QRC_FILES CONFIGURE_DEPENDS
 # [LIBRARIES]
 include(cmake/libraries/fmt.cmake)
 include(cmake/libraries/spdlog.cmake)
-include(cmake/libraries/opencv.cmake)
 include(cmake/libraries/qt.cmake)
 include(cmake/libraries/common.cmake)
 include(cmake/libraries/utils.cmake)
