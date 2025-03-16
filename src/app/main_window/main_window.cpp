@@ -194,8 +194,8 @@ void MainWindow::disableAllGSettingsKeybinds()
 			QString key	   = parts[1];
 			QString value  = parts.mid(2).join(" ");
 
-			m_original_keybinds[key] = value;
-			QProcess::execute("gsettings", {"set", schema, key, "\"['']\""});
+			m_original_keybinds[key] = {schema, value};
+			QProcess::execute("gsettings", {"set", schema, key, "['']"});
 			qDebug() << "gsettings" << "set" << schema << key << "\"['']\"";
 		}
 	}
@@ -206,8 +206,9 @@ void MainWindow::restoreAllGSettingsKeybinds()
 	for (auto it = m_original_keybinds.begin(); it != m_original_keybinds.end(); ++it)
 	{
 		QString key	  = it.key();
-		QString value = it.value();
-		QProcess::execute("gsettings", {"set", "org.gnome.desktop.wm.keybindings", key, value});
+		QString value = it.value().second;
+		QString schema = it.value().first;
+		QProcess::execute("gsettings", {"set", schema, key, value});
 	}
 	m_original_keybinds.clear();
 }
