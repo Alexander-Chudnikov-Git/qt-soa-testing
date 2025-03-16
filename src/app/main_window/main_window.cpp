@@ -14,6 +14,7 @@
 #include <QSplashScreen>
 #include <QSplitter>
 #include <QTimer>
+#include <qlogging.h>
 
 namespace APP
 {
@@ -48,7 +49,6 @@ void MainWindow::initialize()
 	qApp->installEventFilter(this);
 
 	disableAllGSettingsKeybinds();
-	qDebug() << m_original_keybinds;
 }
 
 void MainWindow::setupUi()
@@ -195,7 +195,8 @@ void MainWindow::disableAllGSettingsKeybinds()
 			QString value  = parts.mid(2).join(" ");
 
 			m_original_keybinds[key] = value;
-			QProcess::execute("gsettings", {"set", schema, key, ""});
+			QProcess::execute("gsettings", {"set", schema, key, "\"['']\""});
+			qDebug() << "gsettings" << "set" << schema << key << "\"['']\"";
 		}
 	}
 }
