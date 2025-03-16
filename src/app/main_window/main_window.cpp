@@ -167,20 +167,34 @@ int executeProcess(const QString &program, const QStringList &arguments)
 	return QProcess::execute(program, arguments);
 }
 
+void MainWindow::executeProcessShellMethod(const QString &command)
+{
+	QProcess process;
+	process.start("bash", QStringList() << "-c" << command);
+	process.waitForFinished();
+}
+
+QFuture<void> MainWindow::runShellCommandAsync(const QString &command)
+{
+	return QtConcurrent::run(executeProcessShellMethod, command);
+}
+
 void MainWindow::disableAllGSettingsKeybinds()
 {
-	QFuture<int> future =
-		QtConcurrent::run(executeProcess, QStringLiteral("gsettings"),
-						  QStringList({"set", "org.gnome.shell.extensions.dash-to-dock", "autohide-in-fullscreen", "true"}));
+	QFuture<void> future =
+		runShellCommandAsync("gsettings set org.gnome.shell.extensions.dash-to-dock autohide-in-fullscreen true");
+
 	SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 				   "Disabling all GSettings keybinds\nIf application crashed, you can restore them manually by running "
 				   "'gsettings list-schemas | xargs -n 1 gsettings reset-recursively'");
+
 	QProcess process;
 	process.start("bash",
 				  QStringList() << "-c" << "gsettings list-recursively | grep -E \"<[a-zA-Z]*>|(Super|Alt|Control|Meta|Key)\"");
 	process.waitForFinished();
 	QString		output = process.readAllStandardOutput();
 	QStringList lines  = output.split("\n", Qt::SkipEmptyParts);
+
 	for (const QString &line : lines)
 	{
 		QStringList parts = line.split(" ", Qt::SkipEmptyParts);
@@ -191,6 +205,7 @@ void MainWindow::disableAllGSettingsKeybinds()
 			QString value  = parts.mid(2).join(" ");
 			QString new_value;
 			m_original_keybinds[key] = {schema, value};
+
 			if (value.count("["))
 			{
 				new_value = "['']";
@@ -199,28 +214,34 @@ void MainWindow::disableAllGSettingsKeybinds()
 			{
 				new_value = "''";
 			}
-			future =
-				QtConcurrent::run(executeProcess, QStringLiteral("gsettings"), QStringList({"set", schema, key, new_value}));
+
+			future = runShellCommandAsync(QString("gsettings set %1 %2 %3 %4").arg(schema, key, new_value));
 			SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 						   "\tTemporary removing keybind: " + schema + " " + key + " " + value);
 		}
 	}
+
+	future.waitForFinished();
 }
 
 void MainWindow::restoreAllGSettingsKeybinds()
 {
 	SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application, "Restoring all GSettings keybinds");
 
-	QFuture<int> future;
+	QFuture<void> future;
 	for (auto it = m_original_keybinds.begin(); it != m_original_keybinds.end(); ++it)
 	{
 		QString key	   = it.key();
 		QString value  = it.value().second;
 		QString schema = it.value().first;
-		future = QtConcurrent::run(executeProcess, QStringLiteral("gsettings"), QStringList({"set", schema, key, value}));
+
+		future = runShellCommandAsync(QString("gsettings set %1 %2 %3 %4").arg(schema, key, value));
 		SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 					   "\tRestoring keybind: " + schema + " " + key + " " + value);
 	}
+
+	future.waitForFinished();
+
 	m_original_keybinds.clear();
 }
 
