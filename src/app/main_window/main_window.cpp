@@ -217,7 +217,7 @@ void MainWindow::disableAllGSettingsKeybinds()
 
 			future = runShellCommandAsync(QString("gsettings set %1 %2 %3 %4").arg(schema, key, new_value));
 			SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
-						   "\tTemporary removing keybind: " + schema + " " + key + " " + value);
+						   "\tTemporary removing keybind: " + schema + " " + key + " " + value + " " + new_value);
 		}
 	}
 
