@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Ukrodetector Client
+GenericName=qt-ukr-categorizer-client
+Comment=Client for ukrop detection and categorization server
+Exec=/usr/local/bin/qt-ukr-categorizer-client
+Icon=/usr/local/share/icons/hicolor/64x64/apps/qt-ukr-categorizer-client.svg
+Categories=Utility
