@@ -30,6 +30,11 @@ public:
 
 	void addScreen(const ScreenInfo &screen_info);
 	void switchScreen(PanelType type);
+	void nextScreen();
+
+signals:
+	void testStarted();
+	void testFinished();
 
 private:
 	void initialize();
@@ -37,7 +42,7 @@ private:
 	void setupStyle();
 	void setupConnections();
 
-	QWidget *resolveScreenWidget(PanelType type) const;
+	QWidget *resolveScreenWidget(PanelType type);
 	QString	 resolveScreenText(PanelType type) const;
 
 private:

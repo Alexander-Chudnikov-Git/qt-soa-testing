@@ -31,9 +31,9 @@ MainWindow::~MainWindow()
 void MainWindow::initialize()
 {
 	QRect window_rect = UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::WINDOW_RECT).toRect();
-	this->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint |
-						 Qt::SplashScreen | Qt::MSWindowsFixedSizeDialogHint | Qt::BypassWindowManagerHint |
-						 Qt::MSWindowsOwnDC | Qt::WindowOverridesSystemGestures);
+	this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint |
+						 Qt::MSWindowsFixedSizeDialogHint | Qt::BypassWindowManagerHint | Qt::MSWindowsOwnDC |
+						 Qt::WindowOverridesSystemGestures);
 	this->move(window_rect.x(), window_rect.y());
 	this->setFixedSize(window_rect.width(), window_rect.height());
 	this->showFullScreen();
@@ -44,23 +44,29 @@ void MainWindow::initialize()
 	this->setupConnections();
 	this->setupStyle();
 	qApp->installEventFilter(this);
-	disableAllGSettingsKeybinds();
 }
 
 void MainWindow::setupUi()
 {
+	setAutoFillBackground(true);
+	setAttribute(Qt::WA_StyledBackground);
+
 	auto layout_wrapper = new QWidget();
 	this->m_main_layout = new QGridLayout();
 	this->m_user_panel	= new UserPanelWidget();
 	QPushButton *button = new QPushButton("Close Application");
+	button->setEnabled(false);
 	connect(button, &QPushButton::clicked, this, [this]() {
 		restoreAllGSettingsKeybinds();
 		m_unlock_quit = true;
 		close();
 		qApp->quit();
 	});
+	connect(this, &MainWindow::keybindsDisabled, this, [this, button]() {
+		button->setEnabled(true);
+	});
 	this->m_main_layout->addWidget(button, 0, 0);
-	this->m_main_layout->addWidget(this->m_user_panel, 0, 1);
+	this->m_main_layout->addWidget(this->m_user_panel, 1, 0);
 	layout_wrapper->setLayout(this->m_main_layout);
 	this->setCentralWidget(layout_wrapper);
 	this->setFocus();
@@ -71,11 +77,17 @@ void MainWindow::setupUi()
 void MainWindow::setupConnections()
 {
 	connect(m_move_resize_timer, &QTimer::timeout, this, &MainWindow::onMoveResizeTimerTimeout);
+	connect(m_user_panel, &UserPanelWidget::testStarted, this, [this]() {
+		disableAllGSettingsKeybinds();
+	});
+	connect(m_user_panel, &UserPanelWidget::testFinished, this, [this]() {
+		restoreAllGSettingsKeybinds();
+	});
 }
 
 void MainWindow::setupStyle()
 {
-	setStyleSheet("MainWindow { background: #181818; }");
+	setStyleSheet("* { background-color: #181818; color: #ffffff; }");
 }
 
 void MainWindow::moveEvent(QMoveEvent *event)
@@ -160,11 +172,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		return;
 	}
 	event->ignore();
-}
-
-int executeProcess(const QString &program, const QStringList &arguments)
-{
-	return QProcess::execute(program, arguments);
 }
 
 void MainWindow::executeProcessShellMethod(const QString &command)

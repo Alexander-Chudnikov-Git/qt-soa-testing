@@ -2,11 +2,13 @@
 
 #include "settings_manager.hpp"
 #include "spdlog_wrapper.hpp"
+#include "test_introduction_widget.hpp"
 
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <qlogging.h>
 #include <qvariant.h>
+#include <qwidget.h>
 
 namespace APP
 {
@@ -50,6 +52,20 @@ void UserPanelWidget::switchScreen(PanelType type)
 		}
 	}
 	spdlog::error(QObject::tr("pebkac_error_invalid_screen"));
+	return;
+}
+
+void UserPanelWidget::nextScreen()
+{
+	int index = this->m_main_layout->currentIndex();
+	if (index == this->m_screens.size() - 1)
+	{
+		return;
+	}
+
+	this->m_main_layout->setCurrentIndex(index + 1);
+	UTILS::SettingsManager::instance()->setDirectValue(UTILS::SettingsManager::Setting::LAST_OPEN_PANEL,
+													   QVariant::fromValue(this->m_screens[index + 1].type));
 	return;
 }
 
