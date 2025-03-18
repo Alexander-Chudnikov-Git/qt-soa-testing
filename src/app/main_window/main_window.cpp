@@ -16,7 +16,9 @@
 #include <QSplitter>
 #include <QTimer>
 #include <QtConcurrent>
-#include <qlogging.h>
+#include <pwd.h>
+#include <unistd.h>
+#include <utmp.h>
 
 namespace APP
 {
