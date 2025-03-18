@@ -19,7 +19,8 @@ public:
 	~IntroductionWidget();
 
 signals:
-	void onStartTestClicked();
+    void onValidationDone();
+    void onStartTestClicked();
 
 private:
 	void initialize();

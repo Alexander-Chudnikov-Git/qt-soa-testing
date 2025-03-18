@@ -88,6 +88,8 @@ void IntroductionWidget::setupConnections()
 
 void IntroductionWidget::onValidationFinished(ValidationStatus status)
 {
+	emit onValidationDone();
+
 	if (status != ValidationStatus::Success)
 	{
 		return;

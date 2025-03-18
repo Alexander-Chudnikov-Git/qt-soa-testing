@@ -63,6 +63,9 @@ void MainWindow::setupUi()
 		qApp->quit();
 	});
 	connect(this, &MainWindow::keybindsDisabled, this, [this, button]() {
+
+	});
+	connect(m_user_panel, &UserPanelWidget::validationFinished, this, [this, button]() {
 		button->setEnabled(true);
 	});
 	this->m_main_layout->addWidget(button, 0, 0);

@@ -35,6 +35,7 @@ public:
 signals:
 	void testStarted();
 	void testFinished();
+	void validationFinished();
 
 private:
 	void initialize();

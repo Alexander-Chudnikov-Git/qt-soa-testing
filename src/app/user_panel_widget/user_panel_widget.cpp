@@ -122,6 +122,9 @@ QWidget *UserPanelWidget::resolveScreenWidget(PanelType type)
 				switchScreen(PanelType::TEST_ONE);
 				emit testStarted();
 			});
+			connect(widget, &IntroductionWidget::onValidationDone, this, [this]() {
+				emit validationFinished();
+			});
 			return std::move(widget);
 		}
 		case PanelType::TEST_ONE:
