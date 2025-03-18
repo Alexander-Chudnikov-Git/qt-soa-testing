@@ -358,6 +358,7 @@ bool SuricataValidatorWidget::checkSuricata()
 	{
 		SPD_ERROR_CLASS(UTILS::DEFAULTS::d_settings_group_application, QString("Unable to start Suricata"));
 		m_reason_label->setText(QString("Невозможно запустить Suricata"));
+		final_suricata_process.kill();
 		return false;
 	}
 
@@ -392,6 +393,7 @@ bool SuricataValidatorWidget::checkSuricata()
 	{
 		SPD_ERROR_CLASS(UTILS::DEFAULTS::d_settings_group_application, QString("Unable to find Suricata log file"));
 		m_reason_label->setText(QString("Невозможно найти файл журнала Suricata"));
+		final_suricata_process.kill();
 		return false;
 	}
 
@@ -411,8 +413,11 @@ bool SuricataValidatorWidget::checkSuricata()
 		SPD_ERROR_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 						QString("File is empty or does not exist: %1").arg(m_suricata_log_path));
 		m_reason_label->setText(QString("ICMP запрос не перехвачен Suricata"));
+		final_suricata_process.kill();
 		return false;
 	}
+
+	final_suricata_process.kill();
 
 	return true;
 }

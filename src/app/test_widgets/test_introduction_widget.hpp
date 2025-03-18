@@ -1,8 +1,8 @@
 #ifndef TEST_INTRODUCTION_WIDGET_HPP
 #define TEST_INTRODUCTION_WIDGET_HPP
 
+#include <QPushButton>
 #include <QWidget>
-#include <qpushbutton.h>
 
 class QGridLayout;
 class QLabel;

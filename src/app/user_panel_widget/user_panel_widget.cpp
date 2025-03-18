@@ -3,6 +3,7 @@
 #include "settings_manager.hpp"
 #include "spdlog_wrapper.hpp"
 #include "test_introduction_widget.hpp"
+#include "test_one_widget.hpp"
 
 #include <QStackedWidget>
 #include <QVBoxLayout>
@@ -97,8 +98,9 @@ void UserPanelWidget::setupUi()
 	this->addScreen(test_two_screen);
 	this->addScreen(test_result_screen);
 
-	switchScreen(
-		UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::LAST_OPEN_PANEL).value<PanelType>());
+	// switchScreen(
+	//	UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::LAST_OPEN_PANEL).value<PanelType>());
+	switchScreen(PanelType::TEST_INTRODUCTION);
 }
 
 void UserPanelWidget::setupConnections()
@@ -110,14 +112,20 @@ void UserPanelWidget::setupStyle()
 				  "QLabel { color: #EEEEEE; }");
 }
 
-QWidget *UserPanelWidget::resolveScreenWidget(PanelType type) const
+QWidget *UserPanelWidget::resolveScreenWidget(PanelType type)
 {
 	switch (type)
 	{
-		case PanelType::TEST_INTRODUCTION:
-			return new QWidget();
+		case PanelType::TEST_INTRODUCTION: {
+			IntroductionWidget *widget = new IntroductionWidget();
+			connect(widget, &IntroductionWidget::onStartTestClicked, this, [this]() {
+				switchScreen(PanelType::TEST_ONE);
+				emit testStarted();
+			});
+			return std::move(widget);
+		}
 		case PanelType::TEST_ONE:
-			return new QWidget();
+			return new TestOneWidget();
 		case PanelType::TEST_TWO:
 			return new QWidget();
 		case PanelType::TEST_RESULT:

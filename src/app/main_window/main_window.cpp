@@ -33,11 +33,11 @@ void MainWindow::initialize()
 	QRect window_rect = UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::WINDOW_RECT).toRect();
 	this->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint |
 						 Qt::MSWindowsFixedSizeDialogHint | Qt::BypassWindowManagerHint | Qt::MSWindowsOwnDC |
-						 Qt::WindowOverridesSystemGestures);
+						 Qt::WindowOverridesSystemGestures | Qt::Widget);
 	this->move(window_rect.x(), window_rect.y());
 	this->setFixedSize(window_rect.width(), window_rect.height());
 	this->showFullScreen();
-	this->m_move_resize_timer->setInterval(200);
+	this->m_move_resize_timer->setInterval(100000);
 	this->m_move_resize_timer->setSingleShot(false);
 	this->m_move_resize_timer->start();
 	this->setupUi();
@@ -121,9 +121,7 @@ bool MainWindow::event(QEvent *event)
 	{
 		onMoveResizeTimerTimeout();
 	}
-	if (QMainWindow::event(event))
-		return true;
-	return false;
+	return QMainWindow::event(event);
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
@@ -159,7 +157,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		{
 			return true;
 		}
-		return false;
 	}
 	return QMainWindow::eventFilter(watched, event);
 }
@@ -229,13 +226,17 @@ void MainWindow::disableAllGSettingsKeybinds()
 	}
 
 	future.waitForFinished();
+
+	emit keybindsDisabled();
 }
 
 void MainWindow::restoreAllGSettingsKeybinds()
 {
 	SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application, "Restoring all GSettings keybinds");
 
-	QFuture<void> future;
+	QFuture<void>  future;
+	QList<QString> keys_to_remove;
+
 	for (auto it = m_original_keybinds.begin(); it != m_original_keybinds.end(); ++it)
 	{
 		QString key	   = it.key();
@@ -245,11 +246,16 @@ void MainWindow::restoreAllGSettingsKeybinds()
 		future = runShellCommandAsync(QString("gsettings set %1 %2 %3").arg(schema, key, value));
 		SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 					   "\tRestoring keybind: " + schema + " " + key + " " + value);
+
+		keys_to_remove.append(key);
 	}
 
 	future.waitForFinished();
 
-	m_original_keybinds.clear();
+	for (const auto &key : keys_to_remove)
+	{
+		m_original_keybinds.remove(key);
+	}
 }
 
 } // namespace APP

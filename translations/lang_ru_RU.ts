@@ -24,8 +24,8 @@
         <translation type="obsolete">Ну нет блядь тут такой кнопки</translation>
     </message>
     <message>
-        <location filename="../src/app/user_panel_widget/user_panel_widget.cpp" line="27"/>
-        <location filename="../src/app/user_panel_widget/user_panel_widget.cpp" line="54"/>
+        <location filename="../src/app/user_panel_widget/user_panel_widget.cpp" line="28"/>
+        <location filename="../src/app/user_panel_widget/user_panel_widget.cpp" line="55"/>
         <source>pebkac_error_invalid_screen</source>
         <translation type="unfinished"></translation>
     </message>
