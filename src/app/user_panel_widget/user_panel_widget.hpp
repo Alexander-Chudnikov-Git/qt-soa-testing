@@ -30,6 +30,12 @@ public:
 
 	void addScreen(const ScreenInfo &screen_info);
 	void switchScreen(PanelType type);
+	void nextScreen();
+
+signals:
+	void testStarted();
+	void testFinished();
+	void validationFinished();
 
 private:
 	void initialize();
@@ -37,13 +43,17 @@ private:
 	void setupStyle();
 	void setupConnections();
 
-	QWidget *resolveScreenWidget(PanelType type) const;
+	QWidget *resolveScreenWidget(PanelType type);
 	QString	 resolveScreenText(PanelType type) const;
 
 private:
 	QStackedWidget *m_main_layout;
 
 	QMap<int, ScreenInfo> m_screens;
+
+	QMap<QString, bool>	   m_result_map;
+	QMap<QString, QString> m_result_input_map;
+	QMap<QString, int>	   m_result_invalid_map;
 };
 } // namespace APP
 #endif // USER_PANEL_WIDGET_HPP

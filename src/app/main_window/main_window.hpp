@@ -3,17 +3,17 @@
 
 #include <QCloseEvent>
 #include <QEvent>
+#include <QFuture>
 #include <QGridLayout>
 #include <QMainWindow>
 #include <QMoveEvent>
 #include <QObject>
+#include <QPushButton>
 #include <QResizeEvent>
 #include <QTimer>
 
 namespace APP
 {
-
-// Forward declaration of UserPanelWidget (assuming it's defined in user_panel_widget.hpp)
 class UserPanelWidget;
 
 class MainWindow : public QMainWindow
@@ -23,6 +23,9 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow() override;
+
+signals:
+	void keybindsDisabled();
 
 protected:
 	void moveEvent(QMoveEvent *event) override;
@@ -42,9 +45,14 @@ private:
 	void setupConnections();
 	void setupStyle();
 
+	static void	  executeProcessShellMethod(const QString &command);
+	QFuture<void> runShellCommandAsync(const QString &command);
+
 	QTimer			*m_move_resize_timer;
 	QGridLayout		*m_main_layout;
 	UserPanelWidget *m_user_panel;
+
+	QPushButton *m_close_button;
 
 	bool m_unlock_quit;
 
