@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QMoveEvent>
 #include <QObject>
+#include <QPushButton>
 #include <QResizeEvent>
 #include <QTimer>
 
@@ -50,6 +51,8 @@ private:
 	QTimer			*m_move_resize_timer;
 	QGridLayout		*m_main_layout;
 	UserPanelWidget *m_user_panel;
+
+	QPushButton *m_close_button;
 
 	bool m_unlock_quit;
 

@@ -50,6 +50,10 @@ private:
 	QStackedWidget *m_main_layout;
 
 	QMap<int, ScreenInfo> m_screens;
+
+	QMap<QString, bool>	   m_result_map;
+	QMap<QString, QString> m_result_input_map;
+	QMap<QString, int>	   m_result_invalid_map;
 };
 } // namespace APP
 #endif // USER_PANEL_WIDGET_HPP

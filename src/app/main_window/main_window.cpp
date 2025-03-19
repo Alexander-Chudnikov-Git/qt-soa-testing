@@ -5,6 +5,7 @@
 #include "user_panel_widget.hpp"
 
 #include <QApplication>
+#include <QClipboard>
 #include <QGridLayout>
 #include <QKeyEvent>
 #include <QLabel>
@@ -39,13 +40,13 @@ void MainWindow::initialize()
 	this->move(window_rect.x(), window_rect.y());
 	this->setFixedSize(window_rect.width(), window_rect.height());
 	this->showFullScreen();
-	this->m_move_resize_timer->setInterval(100000);
+	this->m_move_resize_timer->setInterval(500);
 	this->m_move_resize_timer->setSingleShot(false);
 	this->m_move_resize_timer->start();
 	this->setupUi();
 	this->setupConnections();
 	this->setupStyle();
-	qApp->installEventFilter(this);
+	// qApp->installEventFilter(this);
 }
 
 void MainWindow::setupUi()
@@ -56,27 +57,27 @@ void MainWindow::setupUi()
 	auto layout_wrapper = new QWidget();
 	this->m_main_layout = new QGridLayout();
 	this->m_user_panel	= new UserPanelWidget();
-	QPushButton *button = new QPushButton("Close Application");
-	button->setEnabled(false);
-	connect(button, &QPushButton::clicked, this, [this]() {
+	m_close_button		= new QPushButton("Close Application");
+	m_close_button->setEnabled(false);
+	connect(m_close_button, &QPushButton::clicked, this, [this]() {
 		restoreAllGSettingsKeybinds();
 		m_unlock_quit = true;
 		close();
 		qApp->quit();
 	});
-	connect(this, &MainWindow::keybindsDisabled, this, [this, button]() {
+	connect(this, &MainWindow::keybindsDisabled, this, [this]() {
 
 	});
-	connect(m_user_panel, &UserPanelWidget::validationFinished, this, [this, button]() {
-		button->setEnabled(true);
+	connect(m_user_panel, &UserPanelWidget::validationFinished, this, [this]() {
+		m_close_button->setEnabled(true);
 	});
-	this->m_main_layout->addWidget(button, 0, 0);
+	this->m_main_layout->addWidget(m_close_button, 0, 0);
 	this->m_main_layout->addWidget(this->m_user_panel, 1, 0);
 	layout_wrapper->setLayout(this->m_main_layout);
 	this->setCentralWidget(layout_wrapper);
-	this->setFocus();
-	this->activateWindow();
-	this->raise();
+	// this->setFocus();
+	// this->activateWindow();
+	// this->raise();
 }
 
 void MainWindow::setupConnections()
@@ -84,9 +85,11 @@ void MainWindow::setupConnections()
 	connect(m_move_resize_timer, &QTimer::timeout, this, &MainWindow::onMoveResizeTimerTimeout);
 	connect(m_user_panel, &UserPanelWidget::testStarted, this, [this]() {
 		disableAllGSettingsKeybinds();
+		m_close_button->setEnabled(false);
 	});
 	connect(m_user_panel, &UserPanelWidget::testFinished, this, [this]() {
 		restoreAllGSettingsKeybinds();
+		m_close_button->setEnabled(true);
 	});
 }
 
@@ -111,9 +114,9 @@ void MainWindow::onMoveResizeTimerTimeout()
 	this->move(window_rect.x(), window_rect.y());
 	this->setFixedSize(window_rect.width(), window_rect.height());
 	this->showFullScreen();
-	this->setFocus();
-	this->activateWindow();
-	this->raise();
+	// this->setFocus();
+	// this->activateWindow();
+	// this->raise();
 }
 
 bool MainWindow::event(QEvent *event)
@@ -192,6 +195,10 @@ QFuture<void> MainWindow::runShellCommandAsync(const QString &command)
 
 void MainWindow::disableAllGSettingsKeybinds()
 {
+	QClipboard *clipboard = QGuiApplication::clipboard();
+	clipboard->clear();
+	clipboard->setText(":)", QClipboard::Clipboard);
+
 	QStringList	 users;
 	struct utmp *ut;
 
@@ -268,6 +275,9 @@ void MainWindow::disableAllGSettingsKeybinds()
 
 void MainWindow::restoreAllGSettingsKeybinds()
 {
+	QClipboard *clipboard = QGuiApplication::clipboard();
+	clipboard->clear();
+
 	QStringList	 users;
 	struct utmp *ut;
 

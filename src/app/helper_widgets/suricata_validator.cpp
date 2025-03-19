@@ -306,10 +306,19 @@ bool SuricataValidatorWidget::checkSuricata()
 
 		if (error_count > 0)
 		{
+			QString sudo_message;
+
+			if (error_count == 1)
+			{
+				sudo_message = "\nВозможно стоит запустить Suricata с правами суперпользователя";
+			}
+
 			SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 						   QString("Suricata config error count: %1 in file %2").arg(error_count).arg(config_path));
-			m_reason_label->setText(
-				QString("Обнаружено %1 ошибок в файле конфигурации Suricata: %2").arg(error_count).arg(config_path));
+			m_reason_label->setText(QString("Обнаружено %1 ошибок в файле конфигурации Suricata: %2%3\n")
+										.arg(error_count)
+										.arg(config_path)
+										.arg(sudo_message));
 			return false;
 		}
 		else

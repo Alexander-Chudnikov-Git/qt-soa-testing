@@ -1,5 +1,5 @@
-#ifndef TEST_ONE_WIDGET_HPP
-#define TEST_ONE_WIDGET_HPP
+#ifndef TEST_TWO_WIDGET_HPP
+#define TEST_TWO_WIDGET_HPP
 
 #include <QPushButton>
 #include <QTextEdit>
@@ -10,16 +10,16 @@ class QLabel;
 
 namespace APP
 {
-class TestOneWidget : public QWidget
+class TestTwoWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	explicit TestOneWidget(QWidget *parent = nullptr);
-	~TestOneWidget();
+	explicit TestTwoWidget(QWidget *parent = nullptr);
+	~TestTwoWidget();
 
 signals:
-	void testResult(QMap<QString, bool> result, const QString &user_input, int m_invalid_count);
+	void testResult(QMap<QString, bool> result, const QString &user_input, int invalid_count);
 
 private:
 	void initialize();
@@ -47,4 +47,4 @@ private:
 };
 } // namespace APP
 
-#endif // TEST_ONE_WIDGET_HPP
+#endif // TEST_TWO_WIDGET_HPP
