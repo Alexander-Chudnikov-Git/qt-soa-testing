@@ -179,8 +179,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::executeProcessShellMethod(const QString &command)
 {
 	QProcess process;
-	process.start("bash", QStringList() << "-c" << command << "> /dev/null 2>&");
+	// process.start("bash", QStringList() << "-c" << command << "> /dev/null 2>&");
+	process.start(command);
 	process.waitForFinished();
+
+	qDebug() << command;
 }
 
 QFuture<void> MainWindow::runShellCommandAsync(const QString &command)
@@ -214,8 +217,6 @@ void MainWindow::disableAllGSettingsKeybinds()
 
 	QString user_uid = QString::number(pwd->pw_uid);
 
-	qDebug() << "Users logged in:" << users[0] << "(" << user_uid << ")";
-
 	QFuture<void> future =
 		runShellCommandAsync("sudo -Hu " + users[0] + " DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + user_uid +
 							 "/bus gsettings set org.gnome.shell.extensions.dash-to-dock autohide-in-fullscreen true");
@@ -225,11 +226,8 @@ void MainWindow::disableAllGSettingsKeybinds()
 				   "'gsettings list-schemas | xargs -n 1 gsettings reset-recursively'");
 
 	QProcess process;
-	process.start(
-		"bash", QStringList() << "-c"
-							  << "sudo -Hu " + users[0] + " DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" +
-									 user_uid +
-									 "/bus gsettings list-recursively | grep -E \"<[a-zA-Z]*>|(Super|Alt|Control|Meta|Key)\"");
+	process.start("sudo -Hu " + users[0] + " DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + user_uid +
+				  "/bus gsettings list-recursively | grep -E \"<[a-zA-Z]*>|(Super|Alt|Control|Meta|Key)\"");
 	process.waitForFinished();
 	QString		output = process.readAllStandardOutput();
 	QStringList lines  = output.split("\n", Qt::SkipEmptyParts);
@@ -254,10 +252,9 @@ void MainWindow::disableAllGSettingsKeybinds()
 				new_value = "''";
 			}
 
-			future = runShellCommandAsync(QString("sudo -Hu " + users[0] +
-												  " DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" + user_uid +
-												  "/bus gsettings set %1 %2 %3")
-											  .arg(schema, key, new_value));
+			future = runShellCommandAsync(
+				QString("sudo -Hu %1 DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%2/bus gsettings set %3 %4 %5")
+					.arg(users[0], user_uid, schema, key, new_value));
 			SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 						   "\tTemporary removing keybind: " + schema + " " + key + " " + value + " " + new_value);
 		}
@@ -305,10 +302,9 @@ void MainWindow::restoreAllGSettingsKeybinds()
 		QString value  = it.value().second;
 		QString schema = it.value().first;
 
-		future =
-			runShellCommandAsync(QString("sudo -Hu " + users[0] + " DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" +
-										 user_uid + "/bus gsettings set %1 %2 %3")
-									 .arg(schema, key, value));
+		future = runShellCommandAsync(
+			QString("sudo -Hu %1 DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%2/bus gsettings set %3 %4 %5")
+				.arg(users[0], user_uid, schema, key, value));
 		SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
 					   "\tRestoring keybind: " + schema + " " + key + " " + value);
 
