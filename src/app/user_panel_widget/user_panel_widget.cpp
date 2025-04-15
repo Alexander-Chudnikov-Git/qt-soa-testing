@@ -509,7 +509,7 @@ void UserPanelWidget::initialize()
 		 "Параметр 'threads' в секции af-packet интерфейса указывает количество рабочих потоков Suricata, которые будут "
 		 "обрабатывать пакеты с этого интерфейса."});
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Как перенаправить входящий UDP-трафик с исходным портом 53 (ответы DNS) в NFQUEUE?",
 		 {"sudo iptables -I INPUT -p udp --dport 53 -j NFQUEUE", "sudo iptables -I OUTPUT -p udp --sport 53 -j NFQUEUE",
 		  "sudo iptables -A INPUT -p udp --source-port 53 -j NFQUEUE", "sudo iptables -I INPUT -p udp --sport 53 -j NFQUEUE"},
@@ -535,7 +535,7 @@ void UserPanelWidget::initialize()
 		 4,
 		 "buffer-size",
 		 createSimpleRegex("buffer-size"),
-		 "Параметр 'buffer-size' определяет размер кольцевого буфера (ring-buffer) в байтах для интерфейса AF_PACKET."});
+		 "Параметр 'buffer-size' определяет размер кольцевого буфера (ring-buffer) в байтах для интерфейса AF_PACKET."});*/
 
 	m_test_generator->addQuestion({"Какой режим запуска ('runmode') Suricata рекомендуется для максимальной "
 								   "производительности на многоядерных системах?",
@@ -546,7 +546,7 @@ void UserPanelWidget::initialize()
 								   "Режим запуска 'workers' ('--runmode=workers') позволяет Suricata эффективно использовать "
 								   "несколько потоков CPU для параллельной обработки пакетов."});
 
-	m_test_generator->addQuestion({"Какой ключ iptables используется для вставки правила в начало цепочки?",
+	/*m_test_generator->addQuestion({"Какой ключ iptables используется для вставки правила в начало цепочки?",
 								   {"-A", "-P", "-N", "-I"},
 								   4,
 								   "-I",
@@ -562,7 +562,7 @@ void UserPanelWidget::initialize()
 		 "sudo iptables -I INPUT -p udp --dport 123 -j NFQUEUE",
 		 createLooseRegex("sudo iptables -I INPUT -p udp --dport 123 -j NFQUEUE"),
 		 "Команда 'sudo iptables -I INPUT -p udp --dport 123 -j NFQUEUE' отправляет входящий (-I INPUT) UDP трафик (-p udp) на "
-		 "порт 123 (--dport 123) в очередь NFQ."});
+		 "порт 123 (--dport 123) в очередь NFQ."});*/
 
 	m_test_generator->addQuestion(
 		{"Какое значение 'stream.inline' принудительно включает режим блокировки (если поддерживается)?",
@@ -573,14 +573,14 @@ void UserPanelWidget::initialize()
 		 "Установка 'stream.inline: yes' принудительно включает режим inline для обработки потоков Suricata, требуя блокировки "
 		 "пакетов, если движок захвата это позволяет."});
 
-	m_test_generator->addQuestion({"Какой командой iptables удалить все правила только из цепочки INPUT?",
+	/*m_test_generator->addQuestion({"Какой командой iptables удалить все правила только из цепочки INPUT?",
 								   {"sudo iptables -F", "sudo iptables -X INPUT", "sudo iptables -F INPUT",
 									"sudo iptables -Z INPUT", "sudo iptables --flush INPUT"},
 								   3,
 								   "sudo iptables -F INPUT",
 								   createLooseRegex("sudo iptables -F INPUT"),
 								   "Для удаления правил только из конкретной цепочки (например, INPUT) используется команда "
-								   "'sudo iptables -F' с указанием имени цепочки: 'sudo iptables -F INPUT'."});
+								   "'sudo iptables -F' с указанием имени цепочки: 'sudo iptables -F INPUT'."});*/
 
 	this->setupUi();
 	this->setupStyle();
