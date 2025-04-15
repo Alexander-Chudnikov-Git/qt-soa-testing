@@ -41,7 +41,7 @@ namespace DEFAULTS
 
 	constexpr auto d_easter_egg_default = "Congrats on finding this, feel free to mess with other people i guess.";
 
-	constexpr auto d_test_default_time_limit = "15";
+	constexpr auto d_test_default_time_limit = "20";
 	constexpr auto d_test_default_questions	 = "3";
 
 	constexpr auto d_settings_group_generic		= "Generic";

@@ -137,7 +137,7 @@ void UserPanelWidget::initialize()
 		 "Цепочка FORWARD используется для трафика, проходящего через машину (шлюз). 'sudo iptables -I FORWARD -j NFQUEUE' "
 		 "перенаправляет этот трафик в очередь NFQ."});
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Как проверить конфигурацию iptables и увидеть установленные правила со статистикой?",
 		 {"suricata -T", "sudo nft list ruleset", "sudo iptables -vnL", "sudo systemctl status suricata",
 		  "cat /proc/net/nf_queue"},
@@ -145,14 +145,14 @@ void UserPanelWidget::initialize()
 		 "sudo iptables -vnL",
 		 createLooseRegex("sudo iptables -vnL"),
 		 "Команда 'sudo iptables -vnL' отображает текущие правила iptables с подробной статистикой (v - verbose, n - numeric, "
-		 "L - list), полезной для проверки правил NFQUEUE."});
+		 "L - list), полезной для проверки правил NFQUEUE."});*/
 
-	m_test_generator->addQuestion({"Какой командой можно стереть все правила iptables?",
+	/*m_test_generator->addQuestion({"Какой командой можно стереть все правила iptables?",
 								   {"sudo iptables -X", "sudo iptables --flush-all", "sudo iptables -Z", "sudo iptables -F"},
 								   4,
 								   "sudo iptables -F",
 								   createLooseRegex("sudo iptables -F"),
-								   "Команда 'sudo iptables -F' удаляет (flush) все правила из всех цепочек iptables."});
+								   "Команда 'sudo iptables -F' удаляет (flush) все правила из всех цепочек iptables."});*/
 
 	m_test_generator->addQuestion(
 		{"Как перенаправить весь входящий TCP-трафик в очередь NFQ?",
@@ -186,16 +186,16 @@ void UserPanelWidget::initialize()
 		 "Нужно добавить правила в цепочки INPUT (для входящего) и OUTPUT (для исходящего) трафика: 'sudo iptables -I INPUT -j "
 		 "NFQUEUE && sudo iptables -I OUTPUT -j NFQUEUE'."});
 
-	m_test_generator->addQuestion({"Как создать в nftables цепочку IPS с типом filter и хуком forward?",
+	/*m_test_generator->addQuestion({"Как создать в nftables цепочку IPS с типом filter и хуком forward?",
 								   {"nft add table filter", "nft create chain filter IPS", "nft add rule filter forward accept",
 									"nft add chain filter IPS { type filter hook forward priority 10;}"},
 								   4,
 								   "nft add chain filter IPS { type filter hook forward priority 10;}",
 								   createLooseRegex("nft add chain filter IPS { type filter hook forward priority 10;}"),
 								   "Команда 'add chain filter IPS { type filter hook forward priority 10;}' создает цепочку "
-								   "IPS в таблице filter для обработки проходящего трафика с приоритетом 10."});
+								   "IPS в таблице filter для обработки проходящего трафика с приоритетом 10."});*/
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Как в nftables отправить все пакеты из цепочки IPS в очередь Suricata?",
 		 {"nft add rule filter IPS accept", "nft add rule filter IPS drop", "nft add rule filter IPS queue",
 		  "nft add rule filter IPS redirect", "nft add rule filter IPS log"},
@@ -203,9 +203,9 @@ void UserPanelWidget::initialize()
 		 "nft add rule filter IPS queue",
 		 createLooseRegex("nft add rule filter IPS queue"),
 		 "Действие 'queue' в правиле 'nft add rule filter IPS queue' отправляет пакеты "
-		 "пользовательскому приложению (Suricata) через механизм очередей."});
+		 "пользовательскому приложению (Suricata) через механизм очередей."});*/
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Как в nftables ограничить отправку в очередь пакетами, идущими с eth0 на eth1?",
 		 {"nft add rule filter IPS iif eth0 queue", "nft add rule filter IPS oif eth1 queue",
 		  "nft add rule filter IPS iif eth0 oif eth1 queue", "nft add rule filter IPS ip saddr 192.168.1.0/24 queue"},
@@ -213,9 +213,9 @@ void UserPanelWidget::initialize()
 		 "nft add rule filter IPS iif eth0 oif eth1 queue",
 		 createLooseRegex("nft add rule filter IPS iif eth0 oif eth1 queue"),
 		 "Условие 'iif eth0 oif eth1' в правиле 'nft add rule filter IPS iif eth0 oif eth1 queue' "
-		 "фильтрует пакеты по входному (eth0) и выходному (eth1) интерфейсам."});
+		 "фильтрует пакеты по входному (eth0) и выходному (eth1) интерфейсам."});*/
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Как выглядит команда nftables для отправки пакетов в очереди 3-5 с балансировкой (fanout) и обходом "
 		 "(bypass)?",
 		 {"nft add rule filter IPS queue num 3,4,5 options fanout",
@@ -225,7 +225,7 @@ void UserPanelWidget::initialize()
 		 "nft add rule filter IPS queue num 3-5 options fanout,bypass",
 		 createLooseRegex("nft add rule filter IPS queue num 3-5 options fanout,bypass"),
 		 "Команда 'nft add rule filter IPS queue num 3-5 options fanout,bypass' использует диапазон очередей (num 3-5), "
-		 "балансировку (fanout) и обход (bypass)."});
+		 "балансировку (fanout) и обход (bypass)."});*/
 
 	m_test_generator->addQuestion(
 		{"Как запустить Suricata для использования очередей NFQUEUE 3, 4 и 5?",
@@ -236,7 +236,7 @@ void UserPanelWidget::initialize()
 		 "При запуске Suricata в режиме NFQ, каждая используемая очередь указывается отдельным ключом '-q'. Пример: 'suricata "
 		 "-q 3 -q 4 -q 5'."});
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Какой вариант в опциях 'queue' nftables включает распределение пакетов по ID процессора?",
 		 {"bypass", "cpu_map", "hash", "fanout"},
 		 4,
@@ -252,7 +252,7 @@ void UserPanelWidget::initialize()
 		 "bypass",
 		 createSimpleRegex("bypass"),
 		 "Опция 'bypass' в правиле 'queue' nftables гарантирует, что пакеты будут пропущены ядром, если нет активного "
-		 "слушателя очереди (например, Suricata остановлена)."});
+		 "слушателя очереди (например, Suricata остановлена)."});*/
 
 	m_test_generator->addQuestion({"Какой параметр конфигурации AF_PACKET включает режим IPS для Suricata?",
 								   {"copy-mode: tap", "stream.inline: yes", "copy-mode: ips", "use-mmap: yes", "mode: ips"},
@@ -300,7 +300,7 @@ void UserPanelWidget::initialize()
 		 "Используйте команду 'suricata -c /etc/suricata/suricata.yaml --af-packet'. Ключ '-c' указывает конфиг, '--af-packet' "
 		 "включает режим AF_PACKET."});
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Какое значение 'cluster-type' в AF_PACKET обеспечивает симметричный хэш по потоку (по умолчанию)?",
 		 {"cluster_cpu", "cluster_flow", "cluster_round_robin", "cluster_qm", "flow_hash"},
 		 2,
@@ -326,7 +326,7 @@ void UserPanelWidget::initialize()
 		 "sudo iptables -I INPUT -p tcp --sport 80 -j NFQUEUE",
 		 createLooseRegex("sudo iptables -I INPUT -p tcp --sport 80 -j NFQUEUE"),
 		 "Используйте 'sudo iptables -I INPUT -p tcp --sport 80 -j NFQUEUE'. INPUT - входящий трафик, -p tcp - протокол TCP, "
-		 "--sport 80 - исходный порт 80."});
+		 "--sport 80 - исходный порт 80."});*/
 
 	m_test_generator->addQuestion(
 		{"Какой командой запустить Suricata в режиме NFQ для обработки очереди 0?",
@@ -402,7 +402,7 @@ void UserPanelWidget::initialize()
 		 "Команда 'suricata -c /etc/suricata/suricata.yaml --af-packet=eth0' запускает Suricata с указанным конфигом, "
 		 "активируя AF_PACKET только для интерфейса eth0, переопределяя настройки из файла."});
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Как перенаправить исходящий DNS-трафик (UDP, порт назначения 53) в очередь NFQ?",
 		 {"sudo iptables -I INPUT -p udp --sport 53 -j NFQUEUE", "sudo iptables -I OUTPUT -p tcp --dport 53 -j NFQUEUE",
 		  "sudo iptables -A OUTPUT -p udp --port 53 -j QUEUE", "sudo iptables -I OUTPUT -p udp --dport 53 -j NFQUEUE"},
@@ -420,7 +420,7 @@ void UserPanelWidget::initialize()
 		 "nft add rule filter IPS queue num 3-5 options fanout",
 		 createLooseRegex("nft add rule filter IPS queue num 3-5 options fanout"),
 		 "Команда 'nft add rule filter IPS queue num 3-5 options fanout' настроит отправку пакетов в очереди 3, 4, 5 с "
-		 "балансировкой fanout, но без bypass (пакеты будут ожидать обработки)."});
+		 "балансировкой fanout, но без bypass (пакеты будут ожидать обработки)."});*/
 
 	m_test_generator->addQuestion({"Какую опцию AF_PACKET установить в 'no', чтобы отключить zero-copy (например, "
 								   "для режима IDS без этой оптимизации)?",
@@ -431,7 +431,7 @@ void UserPanelWidget::initialize()
 								   "Установка 'use-mmap: no' в конфигурации af-packet отключает zero-copy, что переводит "
 								   "интерфейс в режим без этой оптимизации."});
 
-	m_test_generator->addQuestion({"Какой приоритет выполнения задан для цепочки IPS в команде 'nft add chain "
+	/*m_test_generator->addQuestion({"Какой приоритет выполнения задан для цепочки IPS в команде 'nft add chain "
 								   "filter IPS { type filter hook forward priority 10;}'?",
 								   {"filter", "forward", "10", "0", "default"},
 								   3,
@@ -472,7 +472,7 @@ void UserPanelWidget::initialize()
 		 1,
 		 "--sport",
 		 createSimpleRegex("--sport"),
-		 "Используйте ключ '--sport' (source port) для фильтрации по порту источника (например, '--sport 53')."});
+		 "Используйте ключ '--sport' (source port) для фильтрации по порту источника (например, '--sport 53')."});*/
 
 	m_test_generator->addQuestion({"Какое значение 'stream.inline' позволяет Suricata автоматически включать режим "
 								   "inline, если он поддерживается?",
@@ -492,13 +492,13 @@ void UserPanelWidget::initialize()
 		 "Параметр 'cluster-id' в конфигурации af-packet задает идентификатор кластера, позволяя объединять интерфейсы для "
 		 "совместной обработки трафика."});
 
-	m_test_generator->addQuestion(
+	/*m_test_generator->addQuestion(
 		{"Как полностью отключить дефрагментацию пакетов в конфигурации AF_PACKET для интерфейса?",
 		 {"defrag: false", "fragmentation: off", "defrag: no", "disable-defrag: yes"},
 		 3,
 		 "defrag: no",
 		 createConfigRegex("defrag: no"),
-		 "Параметр 'defrag: no' в настройках интерфейса AF_PACKET отключает дефрагментацию IP пакетов."});
+		 "Параметр 'defrag: no' в настройках интерфейса AF_PACKET отключает дефрагментацию IP пакетов."});*/
 
 	m_test_generator->addQuestion(
 		{"Какой параметр конфигурации AF_PACKET определяет количество потоков для обработки трафика с интерфейса?",
