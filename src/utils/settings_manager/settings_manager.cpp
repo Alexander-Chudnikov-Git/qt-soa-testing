@@ -37,9 +37,15 @@ SettingsManager::~SettingsManager()
 
 void SettingsManager::populateSettings()
 {
+	populateGroup(Group::EASTER_EGG, DEFAULTS::d_settings_group_easter_egg);
 	populateGroup(Group::GENERIC, DEFAULTS::d_settings_group_generic);
 	populateGroup(Group::APPLICATION, DEFAULTS::d_settings_group_application);
 	populateGroup(Group::LANGUAGE, DEFAULTS::d_settings_group_language);
+	populateGroup(Group::TEST, DEFAULTS::d_settings_group_test);
+
+	// [Easter Egg defaults]
+	populateSetting(Setting::EASTER_EGG, DEFAULTS::d_settings_setting_easter_egg, DEFAULTS::d_easter_egg_default,
+					Group::EASTER_EGG);
 
 	// [Application defaults]
 	populateSetting(
@@ -52,6 +58,12 @@ void SettingsManager::populateSettings()
 	// [Language defaults]
 	populateSetting(Setting::TRANSLATION_LANG, DEFAULTS::d_settings_setting_translation_lang,
 					DEFAULTS::d_translator_base_locale, Group::LANGUAGE);
+
+	// [Test defaults]
+	populateSetting(Setting::TEST_TIME_LIMIT, DEFAULTS::d_settings_setting_test_time_limit, DEFAULTS::d_test_default_time_limit,
+					Group::TEST);
+	populateSetting(Setting::TEST_QUESTIONS, DEFAULTS::d_settings_setting_test_questions, DEFAULTS::d_test_default_questions,
+					Group::TEST);
 }
 
 void SettingsManager::populateGroup(SettingsManager::Group group, QString group_string)

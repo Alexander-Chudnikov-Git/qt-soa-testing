@@ -17,13 +17,17 @@
 #include <QSplitter>
 #include <QTimer>
 #include <QtConcurrent>
-#include <pwd.h>
-#include <unistd.h>
-#include <utmp.h>
+#include <qlabel.h>
+#include <qlogging.h>
 
 namespace APP
 {
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), m_move_resize_timer(new QTimer(this)), m_unlock_quit(false)
+MainWindow::MainWindow(QWidget *parent) :
+	QMainWindow(parent),
+	m_move_resize_timer(new QTimer(this)),
+	m_test_timer(new QTimer(this)),
+	m_test_timer_updater(new QTimer(this)),
+	m_unlock_quit(false)
 {
 	this->initialize();
 }
@@ -40,12 +44,22 @@ void MainWindow::initialize()
 	this->move(window_rect.x(), window_rect.y());
 	this->setFixedSize(window_rect.width(), window_rect.height());
 	this->showFullScreen();
-	this->m_move_resize_timer->setInterval(500);
-	this->m_move_resize_timer->setSingleShot(false);
-	this->m_move_resize_timer->start();
+
 	this->setupUi();
 	this->setupConnections();
 	this->setupStyle();
+
+	this->m_move_resize_timer->setInterval(500);
+	this->m_move_resize_timer->setSingleShot(false);
+	this->m_move_resize_timer->start();
+
+	auto test_time = UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::TEST_TIME_LIMIT).toInt();
+	this->m_test_timer->setInterval(test_time * 1000 * 60);
+	this->m_test_timer->setSingleShot(true);
+
+	this->m_test_timer_updater->setInterval(1000);
+	this->m_test_timer_updater->setSingleShot(false);
+	this->m_test_timer_updater->start();
 	// qApp->installEventFilter(this);
 }
 
@@ -54,25 +68,17 @@ void MainWindow::setupUi()
 	setAutoFillBackground(true);
 	setAttribute(Qt::WA_StyledBackground);
 
-	auto layout_wrapper = new QWidget();
-	this->m_main_layout = new QGridLayout();
-	this->m_user_panel	= new UserPanelWidget();
-	m_close_button		= new QPushButton("Close Application");
-	m_close_button->setEnabled(false);
-	connect(m_close_button, &QPushButton::clicked, this, [this]() {
-		restoreAllGSettingsKeybinds();
-		m_unlock_quit = true;
-		close();
-		qApp->quit();
-	});
-	connect(this, &MainWindow::keybindsDisabled, this, [this]() {
+	auto layout_wrapper		 = new QWidget();
+	this->m_main_layout		 = new QGridLayout();
+	this->m_user_panel		 = new UserPanelWidget();
+	this->m_close_button	 = new QPushButton("Close Application");
+	this->m_test_timer_label = new QLabel("00:00:00");
 
-	});
-	connect(m_user_panel, &UserPanelWidget::validationFinished, this, [this]() {
-		m_close_button->setEnabled(true);
-	});
-	this->m_main_layout->addWidget(m_close_button, 0, 0);
-	this->m_main_layout->addWidget(this->m_user_panel, 1, 0);
+	this->m_close_button->setEnabled(true);
+	this->m_main_layout->addWidget(this->m_close_button, 0, 0);
+	this->m_main_layout->addWidget(this->m_test_timer_label, 0, 1);
+	this->m_main_layout->addWidget(this->m_user_panel, 1, 0, 1, 2);
+
 	layout_wrapper->setLayout(this->m_main_layout);
 	this->setCentralWidget(layout_wrapper);
 	// this->setFocus();
@@ -82,14 +88,37 @@ void MainWindow::setupUi()
 
 void MainWindow::setupConnections()
 {
-	connect(m_move_resize_timer, &QTimer::timeout, this, &MainWindow::onMoveResizeTimerTimeout);
-	connect(m_user_panel, &UserPanelWidget::testStarted, this, [this]() {
-		disableAllGSettingsKeybinds();
-		m_close_button->setEnabled(false);
+	connect(this->m_close_button, &QPushButton::clicked, this, [this]() {
+		this->m_unlock_quit = true;
+		close();
+		qApp->quit();
 	});
-	connect(m_user_panel, &UserPanelWidget::testFinished, this, [this]() {
-		restoreAllGSettingsKeybinds();
-		m_close_button->setEnabled(true);
+	connect(this->m_move_resize_timer, &QTimer::timeout, this, &MainWindow::onMoveResizeTimerTimeout);
+	connect(this->m_user_panel, &UserPanelWidget::testStarted, this, [this]() {
+		this->m_close_button->setEnabled(false);
+		this->m_test_timer->start();
+	});
+	connect(this->m_test_timer_updater, &QTimer::timeout, this, [this]() {
+		int current_time = this->m_test_timer->remainingTime();
+
+		int hours	= current_time / 1000 / 3600;
+		int minutes = (current_time / 1000 % 3600) / 60;
+		int seconds = current_time / 1000 % 60;
+
+		QString timeString =
+			QString("%1:%2:%3").arg(hours, 2, 10, QChar('0')).arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0'));
+
+		this->m_test_timer_label->setText(timeString);
+	});
+	connect(this->m_user_panel, &UserPanelWidget::testFinished, this, [this]() {
+		this->m_close_button->setEnabled(true);
+		this->m_test_timer->stop();
+		auto test_time = UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::TEST_TIME_LIMIT).toInt();
+		this->m_test_timer->setInterval(test_time * 1000 * 60);
+	});
+
+	connect(this->m_test_timer, &QTimer::timeout, this, [this]() {
+		this->m_user_panel->finishPrematurely();
 	});
 }
 
@@ -178,156 +207,4 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 	event->ignore();
 }
-
-void MainWindow::executeProcessShellMethod(const QString &command)
-{
-	QProcess process;
-	// process.start("bash", QStringList() << "-c" << command << "> /dev/null 2>&");
-	process.start("bash", {"-c", command});
-	// process.start(command);
-	process.waitForFinished();
-}
-
-QFuture<void> MainWindow::runShellCommandAsync(const QString &command)
-{
-	return QtConcurrent::run(executeProcessShellMethod, command);
-}
-
-void MainWindow::disableAllGSettingsKeybinds()
-{
-	QClipboard *clipboard = QGuiApplication::clipboard();
-	clipboard->clear();
-	clipboard->setText(":)", QClipboard::Clipboard);
-
-	QStringList	 users;
-	struct utmp *ut;
-
-	setutent();
-	while ((ut = getutent()) != nullptr)
-	{
-		if (ut->ut_type == USER_PROCESS)
-		{
-			if (ut->ut_user[0] != '\0')
-			{
-				QString username(ut->ut_user);
-				if (!users.contains(username))
-				{
-					users << username;
-				}
-			}
-		}
-	}
-	endutent();
-
-	struct passwd *pwd = getpwnam(users[0].toUtf8().constData());
-
-	QString user_uid = QString::number(pwd->pw_uid);
-
-	QFuture<void> future =
-		runShellCommandAsync(QString("sudo -Hu %1 DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%2/bus gsettings set "
-									 "org.gnome.shell.extensions.dash-to-dock autohide-in-fullscreen true")
-								 .arg(users[0], user_uid));
-
-	SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
-				   "Disabling all GSettings keybinds\nIf application crashed, you can restore them manually by running "
-				   "'gsettings list-schemas | xargs -n 1 gsettings reset-recursively'");
-
-	QProcess process;
-	process.start("bash", {"-c", QString("sudo -Hu %1 DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%2/bus gsettings "
-										 "list-recursively | grep -E \"<[a-zA-Z]*>|(Super|Alt|Control|Meta|Key)\"")
-									 .arg(users[0], user_uid)});
-	process.waitForFinished();
-	QString		output = process.readAllStandardOutput();
-	QStringList lines  = output.split("\n", Qt::SkipEmptyParts);
-
-	for (const QString &line : lines)
-	{
-		QStringList parts = line.split(" ", Qt::SkipEmptyParts);
-		if (parts.size() >= 3)
-		{
-			QString schema = parts[0];
-			QString key	   = parts[1];
-			QString value  = parts.mid(2).join(" ");
-			QString new_value;
-			m_original_keybinds[key] = {schema, value};
-
-			if (value.count("["))
-			{
-				new_value = "['']";
-			}
-			else
-			{
-				new_value = "''";
-			}
-
-			future = runShellCommandAsync(
-				QString("sudo -Hu %1 DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%2/bus gsettings set %3 %4 %5")
-					.arg(users[0], user_uid, schema, key, new_value));
-			SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
-						   "\tTemporary removing keybind: " + schema + " " + key + " " + value + " " + new_value);
-		}
-	}
-
-	future.waitForFinished();
-
-	emit keybindsDisabled();
-}
-
-void MainWindow::restoreAllGSettingsKeybinds()
-{
-	QClipboard *clipboard = QGuiApplication::clipboard();
-	clipboard->clear();
-
-	QStringList	 users;
-	struct utmp *ut;
-
-	setutent();
-	while ((ut = getutent()) != nullptr)
-	{
-		if (ut->ut_type == USER_PROCESS)
-		{
-			if (ut->ut_user[0] != '\0')
-			{
-				QString username(ut->ut_user);
-				if (!users.contains(username))
-				{
-					users << username;
-				}
-			}
-		}
-	}
-	endutent();
-
-	struct passwd *pwd = getpwnam(users[0].toUtf8().constData());
-
-	QString user_uid = QString::number(pwd->pw_uid);
-
-	SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application, "Restoring all GSettings keybinds");
-
-	QFuture<void>  future;
-	QList<QString> keys_to_remove;
-
-	for (auto it = m_original_keybinds.begin(); it != m_original_keybinds.end(); ++it)
-	{
-		QString key	   = it.key();
-		QString value  = it.value().second;
-		QString schema = it.value().first;
-
-		future = runShellCommandAsync(
-			QString("sudo -Hu %1 DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%2/bus gsettings set %3 %4 %5")
-				.arg(users[0], user_uid, schema, key, value));
-		SPD_WARN_CLASS(UTILS::DEFAULTS::d_settings_group_application,
-					   "\tRestoring keybind: " + schema + " " + key + " " + value);
-
-		keys_to_remove.append(key);
-	}
-
-	future.waitForFinished();
-
-	for (const auto &key : keys_to_remove)
-	{
-		m_original_keybinds.remove(key);
-	}
-}
-
 } // namespace APP

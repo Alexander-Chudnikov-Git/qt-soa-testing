@@ -39,13 +39,23 @@ namespace DEFAULTS
 	constexpr auto d_window_width  = 640;
 	constexpr auto d_window_height = 480;
 
+	constexpr auto d_easter_egg_default = "Congrats on finding this, feel free to mess with other people i guess.";
+
+	constexpr auto d_test_default_time_limit = "15";
+	constexpr auto d_test_default_questions	 = "3";
+
 	constexpr auto d_settings_group_generic		= "Generic";
 	constexpr auto d_settings_group_application = "Application";
 	constexpr auto d_settings_group_language	= "Language";
+	constexpr auto d_settings_group_test		= "Test";
+	constexpr auto d_settings_group_easter_egg	= "Easter_Egg";
 
 	constexpr auto d_settings_setting_window_rect	   = "window_rect";
 	constexpr auto d_settings_setting_translation_lang = "translation_lang";
 	constexpr auto d_settings_setting_last_open_panel  = "last_open_panel";
+	constexpr auto d_settings_setting_test_time_limit  = "test_time_limit";
+	constexpr auto d_settings_setting_test_questions   = "test_questions";
+	constexpr auto d_settings_setting_easter_egg	   = "easter_egg";
 
 	constexpr auto d_application_default_panel = APP::PanelType::TEST_INTRODUCTION;
 

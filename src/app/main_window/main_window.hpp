@@ -11,6 +11,7 @@
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QTimer>
+#include <qlabel.h>
 
 namespace APP
 {
@@ -24,9 +25,6 @@ public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow() override;
 
-signals:
-	void keybindsDisabled();
-
 protected:
 	void moveEvent(QMoveEvent *event) override;
 	void resizeEvent(QResizeEvent *event) override;
@@ -36,8 +34,6 @@ protected:
 
 private slots:
 	void onMoveResizeTimerTimeout();
-	void disableAllGSettingsKeybinds();
-	void restoreAllGSettingsKeybinds();
 
 private:
 	void initialize();
@@ -57,6 +53,10 @@ private:
 	bool m_unlock_quit;
 
 	QMap<QString, QPair<QString, QString>> m_original_keybinds;
+
+	QTimer *m_test_timer;
+	QTimer *m_test_timer_updater;
+	QLabel *m_test_timer_label;
 };
 
 } // namespace APP

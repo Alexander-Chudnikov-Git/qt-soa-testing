@@ -1,13 +1,13 @@
 #include "test_introduction_widget.hpp"
 
-#include "suricata_validator.hpp"
+#include "settings_manager.hpp"
 
 #include <QGridLayout>
 #include <QLabel>
 
 namespace APP
 {
-IntroductionWidget::IntroductionWidget(QWidget *parent)
+IntroductionWidget::IntroductionWidget(QWidget *parent) : QWidget(parent)
 {
 	initialize();
 }
@@ -37,31 +37,31 @@ void IntroductionWidget::setupUi()
 	footnote_font.setPointSize(12);
 	footnote_font.setBold(true);
 
-	m_title_label = new QLabel("Лабораторная работа по дисциплине «Системы Обнаружения Атак»");
+	m_title_label = new QLabel("Лабораторная работа № 2 по дисциплине «Системы Обнаружения Атак»");
 	m_title_label->setAlignment(Qt::AlignCenter);
 	m_title_label->setWordWrap(true);
 	m_title_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_title_label->setFont(title_font);
 
-	m_footnote_label = new QLabel(
-		"Данное приложение временно отключает все системные комбинации клавиш во время прохождения лабораторной работы. "
-		"Выйти из приложения можно нажав на кнопку «Выход» после прохождения всех задач. \n"
-		"При принудительном выходе из приложения все комбинации не будут восстановлены. "
-		"Для их ручного восстановления можно ввести следующую команду в терминале: «xargs -n 1 gsettings reset-recursively». ");
+	auto test_time = UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::TEST_TIME_LIMIT).toString();
+	auto test_questions =
+		UTILS::SettingsManager::instance()->getValue(UTILS::SettingsManager::Setting::TEST_QUESTIONS).toString();
+
+	m_footnote_label = new QLabel(QString("После начала теста, у вас будет ровно %1 минут на его прохождение. \n"
+										  "Тест будет состоять из %2 вопросов.")
+									  .arg(test_time)
+									  .arg(test_questions));
 	m_footnote_label->setAlignment(Qt::AlignCenter);
 	m_footnote_label->setWordWrap(true);
 	m_footnote_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_footnote_label->setFont(footnote_font);
 
-	m_suricata_validator_widget = new SuricataValidatorWidget();
-
-	m_start_test_button = new QPushButton("Начать тест");
+	m_start_test_button = new QPushButton(" Начать тест ");
 	m_start_test_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	m_start_test_button->setFont(title_font);
-	m_start_test_button->setDisabled(true);
+	m_start_test_button->setDisabled(false);
 
 	m_main_layout->addWidget(m_title_label, 0, 0);
-	m_main_layout->addWidget(m_suricata_validator_widget, 1, 0, Qt::AlignCenter);
 	m_main_layout->setRowStretch(2, 0);
 	m_main_layout->addWidget(m_start_test_button, 3, 0, Qt::AlignCenter);
 	m_main_layout->addWidget(m_footnote_label, 5, 0);
@@ -81,20 +81,6 @@ void IntroductionWidget::setupStyle()
 
 void IntroductionWidget::setupConnections()
 {
-	connect(m_suricata_validator_widget, &SuricataValidatorWidget::validationFinished, this,
-			&IntroductionWidget::onValidationFinished);
 	connect(m_start_test_button, &QPushButton::clicked, this, &IntroductionWidget::onStartTestClicked);
-}
-
-void IntroductionWidget::onValidationFinished(ValidationStatus status)
-{
-	emit onValidationDone();
-
-	if (status != ValidationStatus::Success)
-	{
-		return;
-	}
-
-	m_start_test_button->setDisabled(false);
 }
 } // namespace APP

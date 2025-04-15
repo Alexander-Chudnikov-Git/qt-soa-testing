@@ -2,6 +2,9 @@
 #define USER_PANEL_WIDGET_HPP
 
 #include "panel_type.hpp"
+#include "test_answer.hpp"
+#include "test_generator.hpp"
+#include "test_widget.hpp"
 
 #include <QMap>
 #include <QWidget>
@@ -28,14 +31,18 @@ public:
 	explicit UserPanelWidget(QWidget *parent = nullptr);
 	~UserPanelWidget();
 
+	void cleanupQuestions();
+	void generateQuestions();
+
 	void addScreen(const ScreenInfo &screen_info);
 	void switchScreen(PanelType type);
 	void nextScreen();
 
+	void finishPrematurely();
+
 signals:
 	void testStarted();
 	void testFinished();
-	void validationFinished();
 
 private:
 	void initialize();
@@ -54,6 +61,12 @@ private:
 	QMap<QString, bool>	   m_result_map;
 	QMap<QString, QString> m_result_input_map;
 	QMap<QString, int>	   m_result_invalid_map;
+
+	TestGenerator		*m_test_generator;
+	QVector<TestGeneric> m_questions;
+	QVector<TestAnswer>	 m_answers;
+
+	int m_current_test_index;
 };
 } // namespace APP
 #endif // USER_PANEL_WIDGET_HPP

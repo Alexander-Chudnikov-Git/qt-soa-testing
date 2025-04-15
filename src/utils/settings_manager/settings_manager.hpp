@@ -25,6 +25,11 @@ public:
 
 		TRANSLATION_LANG,
 
+		TEST_TIME_LIMIT,
+		TEST_QUESTIONS,
+
+		EASTER_EGG,
+
 		COUNT = DEFAULTS::d_project_enum_invalid
 	};
 
@@ -33,6 +38,9 @@ public:
 		GENERIC,
 		APPLICATION,
 		LANGUAGE,
+		TEST,
+
+		EASTER_EGG,
 
 		DEFAULT = GENERIC,
 
